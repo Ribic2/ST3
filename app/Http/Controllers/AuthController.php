@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,10 @@ class AuthController extends Controller
             return response(['error' => $validator->errors()], 422);
         }
 
-        if (!Auth::validate($request->all())) {
-            return response(['error' => 'User does not exist!'], 422);
+        if (!Auth::attempt($request->all())) {
+            return response(['error' => [
+                'error' => 'User does not exist.'
+            ]], 422);
         }
 
         $token = Auth::user()->createToken('API Token')->accessToken;
@@ -85,6 +88,9 @@ class AuthController extends Controller
      */
     public function getUser(): JsonResponse
     {
-        return response()->json(['user' => Auth::user()]);
+        return response()->json(['user' =>
+            UserResource::make(User::with('friendRequests')
+                ->where('id', Auth::id())->first())
+        ]);
     }
 }

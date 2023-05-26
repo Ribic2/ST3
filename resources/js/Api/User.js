@@ -1,23 +1,39 @@
 const UserEndpoint = axios.create({
-    baseURL: `${process.env.APP_URL}/api/user`
+    baseURL: `http://homestead.test/api/user`
 })
 
 
 export default {
     async getUser() {
-        return await UserEndpoint.post("/user")
+        return await UserEndpoint.post("/")
     },
     async login(data) {
-        await UserEndpoint.post('/user/login', data).then((res) => {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
-        })
+        return await UserEndpoint.post('/login', data);
     },
     async register(data) {
-        await UserEndpoint.post('/user/register', data).then((res) => {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
-        })
+        return await UserEndpoint.post('/register', data);
     },
     async logout() {
-        return await UserEndpoint.post('/user/logout')
+        return await UserEndpoint.post('/logout')
+    },
+
+    async searchUsers(data) {
+        return await UserEndpoint.get('/', data)
+    },
+
+    async getSelectedUser(id) {
+        return await UserEndpoint.get(`/account/${id}`)
+    },
+
+    async addAFriend(data) {
+        return await UserEndpoint.post('/add', data)
+    },
+
+    async acceptRequest(data) {
+        return await UserEndpoint.post('/accept', data)
+    },
+    async getFriends() {
+        return await UserEndpoint.get('/friends')
     }
+
 }

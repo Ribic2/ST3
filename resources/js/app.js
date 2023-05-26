@@ -9,16 +9,15 @@ import 'vuetify/styles'
 import {createVuetify} from 'vuetify'
 import 'material-design-icons-iconfont'
 import * as components from 'vuetify/components'
+import store from './Store/store.js'
 import * as directives from 'vuetify/directives'
 
 
 const vuetify = createVuetify({
     components,
     directives,
-    ssr: true,
 })
 
-const app = createApp(App).use(vuetify);
+const app = createApp(App).use(router).use(vuetify).use(store);
 
-app.use(router)
 app.mount('#app');

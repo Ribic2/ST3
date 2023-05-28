@@ -5,7 +5,8 @@ const store = createStore({
     state () {
         return {
             friendRequests: [],
-            user:{}
+            user:{},
+            posts: []
         }
     },
     mutations: {
@@ -14,6 +15,9 @@ const store = createStore({
         },
         setUser(state, data){
             state.user = data
+        },
+        setPost(state, data){
+            state.posts = data
         }
     },
 

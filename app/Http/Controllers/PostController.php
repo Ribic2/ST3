@@ -50,9 +50,13 @@ class PostController extends Controller
     {
         return Response(
             ['posts' => PostResource::collection(
-                DB::select(sprintf("SELECT distinct p.* FROM posts p, friend_list fl
-                WHERE (fl.user_id = p.user_id OR fl.friend_id = p.user_id
-                AND p.user_id = %s) OR (p.user_id = %s) ORDER BY p.created_at DESC", Auth::id(), Auth::id())))
+                DB::select(sprintf("
+                SELECT distinct p.* FROM posts p, friend_list fl
+                WHERE p.user_id = fl.user_id
+                AND fl.accepted = 1
+                AND fl.friend_id = %s
+                AND p.deleted_at IS null
+                ORDER BY p.created_at DESC", Auth::id())))
             ], 200);
     }
 
@@ -107,5 +111,66 @@ class PostController extends Controller
         broadcast(new UpdateComments(CommentResource::make($comment)))->toOthers();
 
         return Response(['response' => CommentResource::make($comment)]);
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function deletePost(Request $request): Response
+    {
+        $validator = Validator::make($request->all(), [
+            'post_id' => 'required|int'
+        ]);
+
+        if ($validator->fails()) {
+            return Response(["errors" => $validator->errors()], 400);
+        }
+
+        // Check if post was made by user
+        $checkPostAuthor = Post::where('id', '=', $request->get('post_id'))->first();
+
+        if ($checkPostAuthor->user_id != Auth::id()) {
+            return Response(["error" => "Post was not made by you"], 401);
+        }
+
+        $checkPostAuthor->delete();
+
+        return Response([
+            "response" => $checkPostAuthor
+        ]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function updatePost(Request $request): Response
+    {
+        $validator = Validator::make($request->all(), [
+            'post_id' => 'required|int',
+            'post' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return Response(["errors" => $validator->errors()], 400);
+        }
+
+        // Check if post was made by user
+        $checkPostAuthor = Post::where('id', '=', $request->get('post_id'))->first();
+
+        if ($checkPostAuthor->user_id != Auth::id()) {
+            return Response(["error" => "Post was not made by you"], 401);
+        }
+
+        $checkPostAuthor->update([
+            'post' => $request->get('post')
+        ]);
+
+        return Response(
+            [
+                "response" => PostResource::make($checkPostAuthor)
+            ]);
     }
 }

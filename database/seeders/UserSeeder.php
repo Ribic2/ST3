@@ -31,5 +31,19 @@ class UserSeeder extends Seeder
             'dateOfBirth' => Carbon::parse('2000-01-01'),
             'created_at' => Carbon::today()
         ]);
+
+        DB::table('friend_lust')->insert([
+            'user_id' => 11,
+            'friend_id' => 11,
+            'accepted' => 1,
+            'requested_by' => 11
+        ]);
+
+        DB::table('friend_lust')->insert([
+            'user_id' => 12,
+            'friend_id' => 12,
+            'accepted' => 1,
+            'requested_by' => 12
+        ]);
     }
 }

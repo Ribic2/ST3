@@ -30,3 +30,6 @@ Route::post('/user/add', [UserController::class, 'addFriend'])->middleware('auth
 Route::post('/user/accept', [UserController::class, 'acceptFriend'])->middleware('auth:api');
 Route::get('/user/friends', [UserController::class, 'getFriendList'])->middleware('auth:api');
 Route::post('/post/comment', [PostController::class, 'commentPost'])->middleware('auth:api');
+Route::post('/post/delete', [PostController::class, 'deletePost'])->middleware('auth:api');
+Route::post('/post/update', [PostController::class, 'updatePost'])->middleware('auth:api');
+Route::post('/user/remove', [UserController::class, 'removeFriend'])->middleware('auth:api');

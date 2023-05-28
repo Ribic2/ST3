@@ -3,7 +3,7 @@
         <v-list>
             <v-list-item prepend-icon="mdi-home" title="Home" value="home" to="/webapp"/>
             <v-list-item prepend-icon="mdi-account" title="Account" value="account" to="/webapp/account"/>
-            <v-list-item prepend-icon="mdi-account-multiple" title="Account" value="account" to="/webapp/friends"/>
+            <v-list-item prepend-icon="mdi-account-multiple" title="Friend list" value="Friend list" to="/webapp/friends"/>
         </v-list>
     </v-navigation-drawer>
 
@@ -134,6 +134,7 @@ export default {
             this.initials = `${this.user.name[0]}${this.user.surname[0]}`
             this.$store.commit('addFriendRequest', this.friendRequests)
             this.$store.commit('setUser', this.user)
+            this.$store.commit('setPost', res.data.posts)
         })
     },
     methods: {

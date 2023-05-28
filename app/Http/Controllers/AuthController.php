@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -88,9 +90,15 @@ class AuthController extends Controller
      */
     public function getUser(): JsonResponse
     {
-        return response()->json(['user' =>
-            UserResource::make(User::with('friendRequests')
-                ->where('id', Auth::id())->first())
-        ]);
+        return response()->json(
+            [
+                'user' => UserResource::make(
+                    User::with('friendRequests')
+                        ->where('id', Auth::id())->first()
+                ),
+                'posts' => PostResource::collection(
+                    Post::where('user_id', '=', Auth::id())->get()
+                )
+            ]);
     }
 }

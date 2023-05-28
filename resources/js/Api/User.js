@@ -32,8 +32,12 @@ export default {
     async acceptRequest(data) {
         return await UserEndpoint.post('/accept', data)
     },
+
     async getFriends() {
         return await UserEndpoint.get('/friends')
-    }
+    },
 
+    async removeUser(data) {
+        return await UserEndpoint.post('/remove', data);
+    }
 }

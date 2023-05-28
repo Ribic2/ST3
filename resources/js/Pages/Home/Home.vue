@@ -15,7 +15,7 @@
         </v-card>
 
         <v-main class="pt-3 pa-0">
-            <PostComponent v-for="postProp in posts" :post="postProp"/>
+            <PostComponent v-for="postProp in posts" :post.sync="postProp"/>
         </v-main>
     </v-container>
 </template>

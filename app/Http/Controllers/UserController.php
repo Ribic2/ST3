@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\FriendRequestResource;
+use App\Http\Resources\PostResource;
 use App\Models\FriendList;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -36,11 +38,25 @@ class UserController extends Controller
             "user" => User::where('id', $id)->first(),
             "isFriend" => FriendList::where([
                     'user_id' => Auth::id(),
-                    'friend_id' => $id
+                    'friend_id' => $id,
+                    'accepted' => 1
                 ])->whereOr([
                     'user_id' => $id,
                     'friend_id' => Auth::id(),
-                ])->count() > 0
+                    'accepted' => 1
+                ])->count() > 0,
+            "requested_sent" => FriendList::where([
+                    'user_id' => Auth::id(),
+                    'friend_id' => $id,
+                    'accepted' => null
+                ])->whereOr([
+                    'user_id' => $id,
+                    'friend_id' => Auth::id(),
+                    'accepted' => null
+                ])->count() > 0,
+            "posts" => PostResource::collection(
+                Post::where('user_id', '=', $id)->get()
+            )
         ]);
     }
 
@@ -71,7 +87,9 @@ class UserController extends Controller
         ])->count();
 
         if ($checkUp > 0) {
-            return Response(['error' => 'Request already sent!'], 400);
+            return Response([
+                'error' => 'Request already sent!'
+            ]);
         }
 
         $friendRequest = FriendList::create([
@@ -116,7 +134,35 @@ class UserController extends Controller
     public function getFriendList(): Response
     {
         return Response([
-            'friends' => User::join('friend_list as fl', 'users.id', '=', 'fl.user_id')->get()
+            'friends' => User::join('friend_list as fl', 'users.id', '=', 'fl.user_id')
+                ->select(['name', "surname", "email", "users.id"])
+                ->get()->flatten()->unique("name")
+        ]);
+    }
+
+    public function removeFriend(Request $request): Response
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|int'
+        ]);
+
+        if ($validator->fails()) {
+            return Response(['error' => $validator->errors()], 400);
+        }
+
+        FriendList::where([
+            'user_id' => Auth::id(),
+            'friend_id' => $request->get('id')
+        ])->delete();
+
+        FriendList::where([
+            'user_id' => $request->get('id'),
+            'friend_id' => Auth::id(),
+        ])->delete();
+
+        return Response([
+           "message" => "Removed",
+           "status" => true
         ]);
     }
 }

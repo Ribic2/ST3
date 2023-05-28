@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mt-1">
+    <v-card class="mt-1" v-if="!isDeleted">
         <v-row align="center"
                justify="center">
             <v-col cols="1">
@@ -9,9 +9,39 @@
                     </v-avatar>
                 </v-card-text>
             </v-col>
-            <v-col>
-                <h1>{{ post.post }}</h1>
+            <v-col cols="9" v-if="!edit">
+                <h1>{{ postText }}</h1>
             </v-col>
+
+            <v-col cols="9" v-else>
+                <v-text-field label="Edit post.." v-model="postText"/>
+                <v-btn @click="updatePost">Update post</v-btn>
+                <v-btn @click="cancelAction">Cancel</v-btn>
+            </v-col>
+
+            <v-col v-if="post.created_by.id === this.$store.state.user.id">
+                <v-menu
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    location="end"
+                >
+                    <template v-slot:activator="{props}">
+                        <v-btn icon="mdi-dots-vertical" v-bind="props"/>
+                    </template>
+
+
+                    <v-list>
+                        <v-list-item>
+                            <v-btn @click="deletePost">Delete post</v-btn>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-btn @click="editPost">Edit post</v-btn>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
+            </v-col>
+
+            <v-col v-else></v-col>
         </v-row>
 
         <!-- Like section -->
@@ -45,10 +75,25 @@ export default {
         return {
             comments: [],
             commentModel: '',
-            likes: 0
+            likes: 0,
+            menu: false,
+            edit: false,
+            postText: '',
+            isDeleted: false
         }
     },
     methods: {
+        cancelAction(){
+          this.edit = false;
+          this.postText = this.post.post
+        },
+        updatePost() {
+            PostFactory.editPost({post_id: this.post.id, post: this.postText})
+                .then((res) => {
+                    this.$emit('update:post', res.data.response)
+                    this.edit = false
+                })
+        },
         addNewComment() {
             PostFactory.addNewComment({post_id: this.post.id, comment: this.commentModel})
         },
@@ -60,11 +105,21 @@ export default {
                     this.likes--;
                 }
             })
+        },
+        deletePost() {
+            PostFactory.deletePost({post_id: this.post.id})
+                .then((res) => {
+                    this.isDeleted = true
+                })
+        },
+        editPost() {
+            this.edit = true
         }
     },
     mounted() {
         this.comments = this.post.comments
         this.likes = this.post.likes.length
+        this.postText = this.post.post
     },
     computed: {
         initials() {
@@ -74,7 +129,7 @@ export default {
     created() {
         window.Echo.private('update-posts-channel')
             .listen('UpdateComments', (e) => {
-                if(this.post.id === e.comment.post_id){
+                if (this.post.id === e.comment.post_id) {
                     this.comments.unshift(e.comment)
                 }
             })

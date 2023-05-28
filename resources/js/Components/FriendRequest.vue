@@ -5,6 +5,7 @@
             <v-btn color="success" @click="sendFriendRequestResponse(true)" class="ma-1">Confirm friend request</v-btn>
             <v-btn color="error" @click="sendFriendRequestResponse(false)" class="ma-1">Deny</v-btn>
         </div>
+        {{ request }}
     </v-card>
 </template>
 
@@ -22,7 +23,7 @@ export default {
     },
     methods: {
         async sendFriendRequestResponse(status) {
-            await user.acceptRequest({id: this.request.id, status: status}).then((
+            await user.acceptRequest({id: this.request.id, status: status, user_id: this.request.user.id}).then((
                 this.hide = false
             ))
         }
